@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home page</title>
+</head>
+<body>
+    <% if (!user) { %>
+        <h1>Server is running.</h1>
+        <a href="/registration">register</a>
+    <% } else { %>
+        <h1>Hello, <%= user.first_name %></h1>
+        <a href="/api/auth/logout">logout</a>
+    <% } %>
+</body>
+</html>

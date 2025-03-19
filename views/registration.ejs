@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration</title>
+  <link rel="stylesheet" href="css/registration.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Title section -->
+    <div class="title">Registration</div>
+    <div class="content">
+      <!-- Registration form -->
+      <form id="registration-form">
+        <div class="user-details">
+          <!-- Input for Full Name -->
+          <div class="input-box">
+            <span class="details">First name</span>
+            <input type="text" id="first_name" placeholder="Enter your first name" required>
+          </div>
+          <!-- Input for Username -->
+          <div class="input-box">
+            <span class="details">Last name</span>
+            <input type="text" id="last_name" placeholder="Enter your last name" required>
+          </div>
+          <!-- Input for Email -->
+          <div class="input-box">
+            <span class="details">Patronymic</span>
+            <input type="text" id="patronymic" placeholder="Enter your patronymic" required>
+          </div>
+          <!-- Input for Phone Number -->
+          <div class="input-box">
+            <span class="details">Position</span>
+            <input type="text" id="position" placeholder="Enter your position" required>
+          </div>
+          <!-- Input for Password -->
+          <div class="input-box">
+            <span class="details">Email</span>
+            <input type="text" id="email" placeholder="Enter your email" required>
+          </div>
+          <!-- Input for Confirm Password -->
+          <div class="input-box">
+            <span class="details">Phone number</span>
+            <input type="text" id="phone_number" placeholder="+7(000)-000-0000" pattern="^\+7\d{10}" title="Format: +7 000 0000 000" required>
+          </div>
+        </div>
+        <div class="input-box">
+          <span class="details">Employee Number</span>
+          <input type="text" id="employee_number" placeholder="Enter your employee number" required>
+        </div>
+        <!-- Submit button -->
+        <div class="button">
+          <input type="submit" value="Register">
+        </div>
+      </form>
+    </div>
+    <script src="js/registration.js"></script>
+  </div>
+</body>
+</html>

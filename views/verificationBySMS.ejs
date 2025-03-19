@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify SMS</title>
+    <link rel="stylesheet" href="css/registration.css">
+</head>
+<body>
+    <div class="container">
+        <div class="title">Enter Verification Code</div>
+        <p>A verification code was sent to your phone.</p>
+        <p id="message-box">If the verification code is not sent, click the resend button.</p>
+        <form id="verification-form">
+            <div class="input-box">
+                <input type="text" id="verification_code" placeholder="Enter code" required>
+              </div>
+            <div class="button">
+                <input type="submit" value="Verify">
+            </div>
+            <div class="button">
+                <input type="button" id="resend-btn" value="Resend">
+            </div>
+        </form>
+    </div>
+    <script src="js/verificationBySMS.js"></script>
+</body>
+</html>
