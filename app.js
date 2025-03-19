@@ -1,11 +1,9 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
-const session = require("express-session");
-const pgSession = require("connect-pg-simple")(session);
 const pool = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
-const pageRoutes = require('./routes/pageRoutes')
+const pageRoutes = require('./routes/pageRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -19,17 +17,6 @@ pool.query('SELECT NOW()', (err, res) => {
 	}
 });
 
-app.use(session({
-	store: new pgSession({
-		pool: pool,
-		tableName: "session",
-	}),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 }
-}));
-
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
@@ -37,7 +24,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-	res.render('index', {user: req.session.user});
+	res.render('index');
 });
 
 app.use('/', pageRoutes);

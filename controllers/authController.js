@@ -109,19 +109,13 @@ const sendVerificationEmail = async (email, registrationLink) => {
 };
 
 
-async function finishVerification(req, user){
+async function finishVerification(user){
     // puts the user from pending_users to users table
     const result = await pool.query(
         `INSERT INTO users (first_name, last_name, patronymic, position, email, phone_number, employee_number, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING id, first_name, email`,
         [user.first_name, user.last_name, user.patronymic, user.position, user.email, user.phone_number, user.employee_number]
     );
-    // create session for the user
-    req.session.user = {
-        id: result.rows[0].id,
-        first_name: result.rows[0].first_name,
-        email: result.rows[0].email
-    };
 }
 
 const verifyByEmail = async (req, res) => {
@@ -142,7 +136,7 @@ const verifyByEmail = async (req, res) => {
             return res.status(400).json({ error: 'Invalid or expired verification token' });
         }
 
-        finishVerification(req, result.rows[0]);
+        finishVerification(result.rows[0]);
 
         // Delete user from pending_users after successful verification
         await pool.query(`DELETE FROM pending_users WHERE registration_token = $1`, [token]);
@@ -172,7 +166,7 @@ const verifyBySMS = async (req, res) => {
             return res.status(400).json({ error: 'Invalid or expired verification code' });
         }
 
-        finishVerification(req, result.rows[0]);
+        finishVerification(result.rows[0]);
         
         // Delete user from pending_users after successful verification
         await pool.query(`DELETE FROM pending_users WHERE phone_number = $1`, [phone_number]);
@@ -185,17 +179,9 @@ const verifyBySMS = async (req, res) => {
 }
 
 
-const logout = (req, res) => {
-    req.session.destroy(() => {
-        res.redirect("/");
-    });
-}
-
-
 module.exports = {
     registerUser,
     sendVerification,
     verifyByEmail,
     verifyBySMS,
-    logout
 };

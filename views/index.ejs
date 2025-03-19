@@ -6,12 +6,7 @@
     <title>Home page</title>
 </head>
 <body>
-    <% if (!user) { %>
-        <h1>Server is running.</h1>
-        <a href="/registration">register</a>
-    <% } else { %>
-        <h1>Hello, <%= user.first_name %></h1>
-        <a href="/api/auth/logout">logout</a>
-    <% } %>
+    <h1>Server is running.</h1>
+    <a href="/registration">register</a>
 </body>
 </html>
