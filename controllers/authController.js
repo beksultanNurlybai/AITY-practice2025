@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 const validator = require("validator");
@@ -32,7 +33,7 @@ const registerUser = async (req, res) => {
         }
     } catch (error) {
         console.error('Error during registration: verification failed:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 
     try {
@@ -42,7 +43,7 @@ const registerUser = async (req, res) => {
             [first_name, last_name, patronymic, position, email, phone_number, employee_number]
         );
 
-        res.status(200).json({ message: 'Registration successful. Please choose a verification method.', email, phone_number });
+        res.status(201).json({ message: 'Registration successful. Please choose a verification method.', email, phone_number });
     } catch (error) {
         console.error('Error during registration:', error);
         res.status(500).json({ error: 'Internal server error' });
@@ -92,7 +93,7 @@ const sendVerification = async (req, res) => {
 };
 
 // Function to send verification email
-const sendVerificationEmail = async (email, registrationLink) => {
+async function sendVerificationEmail (email, registrationLink) {
     const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
@@ -118,6 +119,29 @@ async function finishVerification(user){
     );
 }
 
+function generateAndSendTokens(res, user) {
+    const accessToken = jwt.sign({ 
+            id: user.id,
+            first_name: user.first_name,
+            email: user.email 
+        }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+    const refreshToken = jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+
+    res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false,
+        sameSite: "Strict",
+        maxAge: 15 * 60 * 1000 // 15 min
+    });
+}
+
 const verifyByEmail = async (req, res) => {
     const { token } = req.query;
 
@@ -136,10 +160,13 @@ const verifyByEmail = async (req, res) => {
             return res.status(400).json({ error: 'Invalid or expired verification token' });
         }
 
-        finishVerification(result.rows[0]);
+        const user = result.rows[0];
+        finishVerification(user);
 
         // Delete user from pending_users after successful verification
         await pool.query(`DELETE FROM pending_users WHERE registration_token = $1`, [token]);
+
+        generateAndSendTokens(res, user);
 
         res.redirect('/');
     } catch (error) {
@@ -166,16 +193,50 @@ const verifyBySMS = async (req, res) => {
             return res.status(400).json({ error: 'Invalid or expired verification code' });
         }
 
-        finishVerification(result.rows[0]);
+        const user = result.rows[0];
+        finishVerification(user);
         
         // Delete user from pending_users after successful verification
         await pool.query(`DELETE FROM pending_users WHERE phone_number = $1`, [phone_number]);
 
-        res.status(200).json({message: 'User is verified successfully.'});
+        generateAndSendTokens(res, user);
+
+        res.status(200).json({ message: "User is verified successfully." });
     } catch (error) {
         console.error('Error verifying user:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
+}
+
+
+const refreshToken = (req, res) => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) return res.status(401).json({ error: "No refresh token" });
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+        if (err) return res.status(403).json({ error: "Invalid refresh token" });
+
+        const accessToken = jwt.sign(
+            { id: user.id, first_name: user.first_name, email: user.email },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        res.cookie("accessToken", accessToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "Strict",
+            maxAge: 15 * 60 * 1000, // 15 minutes
+        });
+
+        res.status(200).json({ message: "Access token refreshed" });
+    });
+};
+
+const logout = (req, res) => {
+    res.clearCookie("refreshToken");
+    res.status(200).json({ message: "Logged out" });
 }
 
 
@@ -184,4 +245,6 @@ module.exports = {
     sendVerification,
     verifyByEmail,
     verifyBySMS,
+    refreshToken,
+    logout
 };

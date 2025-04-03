@@ -17,8 +17,9 @@ document.getElementById("verification-form").addEventListener("submit", async fu
     });
 
     const result = await response.json();
+
     if (response.ok) {
-        window.location.href = "/";
+        window.location.href = '/dashboard';
     } else {
         alert(result.error);
     }

@@ -15,9 +15,14 @@ const verificationBySMSPage = (req, res) => {
     res.render('verificationBySMS');
 };
 
+const dashboardPage = (req, res) => {
+    res.render('dashboard', {user: req.user});
+}
+
 module.exports = {
     registrationPage,
     verificationMethodSelectionPage, 
     verificationByEmailPage,
-    verificationBySMSPage
+    verificationBySMSPage,
+    dashboardPage
 };

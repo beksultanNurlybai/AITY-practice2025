@@ -7,6 +7,10 @@
 </head>
 <body>
     <h1>Server is running.</h1>
-    <a href="/registration">register</a>
+    <% if (user == null) { %>
+        <a href="/registration">register</a>
+    <% } else { %>
+        <a href="/dashboard">dashboard</a>
+    <% } %>
 </body>
 </html>

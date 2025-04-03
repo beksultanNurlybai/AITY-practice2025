@@ -1,6 +1,8 @@
 require('dotenv').config();
 const path = require('path');
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const cookieParser = require("cookie-parser");
 const pool = require('./config/db')
 const authRoutes = require('./routes/authRoutes');
 const pageRoutes = require('./routes/pageRoutes');
@@ -21,10 +23,18 @@ app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
-	res.render('index');
+  const token = req.cookies.accessToken;
+	try {const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        console.log(decoded);
+        res.render('index', {user: decoded});
+    } catch (err) {
+        console.log(1);
+        res.render('index', {user: null});
+    }
 });
 
 app.use('/', pageRoutes);
